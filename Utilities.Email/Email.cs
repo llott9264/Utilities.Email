@@ -14,6 +14,8 @@ public class Email : IEmail
 		Production
 	}
 
+	//this is a comment.
+
 	private readonly string _smtpServer;
 	private readonly int _port;
 	private readonly string _username;
@@ -27,6 +29,7 @@ public class Email : IEmail
 	private List<string> _recipientsCc = new();
 	private List<Attachment> _attachments = new();
 
+	//testing build check.
 	public Email(IConfiguration configuration)
 	{
 		_smtpServer = configuration.GetValue<string>("Smtp:SmtpServer");
