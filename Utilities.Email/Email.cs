@@ -28,7 +28,6 @@ public class Email : IEmail
 	private List<string> _recipientsCc = new();
 	private List<Attachment> _attachments = new();
 
-	//testing build check.
 	public Email(IConfiguration configuration)
 	{
 		_smtpServer = configuration.GetValue<string>("Smtp:SmtpServer");
