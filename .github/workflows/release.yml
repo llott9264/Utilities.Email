@@ -9,9 +9,9 @@ on:
 
 jobs:
   publish-nuget:
-    name: Publish Nuget
-    runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
+    name: Publish Nuget Package
+    runs-on: ubuntu-latest    
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
@@ -29,3 +29,10 @@ jobs:
 #        VERSION_REGEX: '^\s*<PackageVersion>(.*)<\/PackageVersion>\s*$'
 #        TAG_FORMAT: '*'
 #        NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+  pull-request-not-merged:
+    if: github.event.pull_request.merged == false
+    name: Cancel Nuget Package Release
+    runs-on: ubuntu-latest
+    steps:
+    - run: |
+        echo Pull Request was not merged with main branch.  Release was canceled.
