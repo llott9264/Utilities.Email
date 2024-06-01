@@ -5,6 +5,8 @@
     <PackageProjectUrl>https://github.com/llott9264/Utilities.Email.git</PackageProjectUrl>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
