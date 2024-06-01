@@ -1,16 +1,15 @@
 name: Release
 
 on:
-  workflow_run:
-    workflows: ["Gated Build Check"]
-    branches: [ main ]
+  pull_request:
     types:
-      - completed
+      - closed
 
 jobs:
   publish-nuget:
+    name: Publish Nuget
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success'}}
+    if: github.event.pull_request.merged == true
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
