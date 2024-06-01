@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Mail;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 
 namespace Utilities.Email;
@@ -14,6 +15,7 @@ public class Email : IEmail
 		Production
 	}
 
+	//this is a comment.
 	private readonly string _smtpServer;
 	private readonly int _port;
 	private readonly string _username;
