@@ -23,11 +23,12 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Publish NuGet Package
-      run: dotnet pack Utilities.Email/Utilities.Email/Utilities.email.csproj
+      #run: dotnet pack Utilities.Email/Utilities.Email/Utilities.Email.csproj
+      run: dotnet pack
     - name: Prep packages
       run: dotnet nuget add source --username llott9264 --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/llott9264/index.json"
     - name: Publish NuGet Package to GitHub
-      run: dotnet nuget push Utilities.Email/Utilities.Email/bin/Release/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github"
+      run: dotnet nuget push Utilities.Email/bin/Release/Utilities.Email*.nupkg --api-key ${{ secrets.NUGETPUBLISHTOKEN }}  --source "github"
   pull-request-not-merged:
     if: github.event.pull_request.merged == false
     name: Cancel Nuget Package Release
