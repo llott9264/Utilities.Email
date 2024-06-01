@@ -13,6 +13,7 @@ public class Email : IEmail
 		Test,
 		Production
 	}
+//add comment to test gated build check.
 
 	private readonly string _smtpServer;
 	private readonly int _port;
