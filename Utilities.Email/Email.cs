@@ -21,8 +21,8 @@ public class Email : IEmail
 	private readonly string _fromEmail;
 	private readonly Environment _environment;
 
-	private string _subject;
-	private string _body;
+	private string _subject = string.Empty;
+	private string _body = string.Empty;
 	private List<string> _recipients = new();
 	private List<string> _recipientsCc = new();
 	private List<Attachment> _attachments = new();
