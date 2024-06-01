@@ -13,7 +13,7 @@ public class Email : IEmail
 		Test,
 		Production
 	}
-	
+
 	private readonly string _smtpServer;
 	private readonly int _port;
 	private readonly string _username;
@@ -29,11 +29,16 @@ public class Email : IEmail
 
 	public Email(IConfiguration configuration)
 	{
-		_smtpServer = configuration.GetValue<string>("Smtp:SmtpServer");
-		_port = configuration.GetValue<int>("Smtp:Port");
-		_username = configuration.GetValue<string>("Smtp:Username");
-		_password = configuration.GetValue<string>("Smtp:Password");
-		_fromEmail = configuration.GetValue<string>("Smtp:EmailFromAddress");
+		_smtpServer = configuration.GetValue<string>("Smtp:SmtpServer") ?? string.Empty;
+		_port = configuration.GetValue<int>("Smtp:Port") != 0
+			? configuration.GetValue<int>("Smtp:Port")
+			: 22;
+		_username = configuration.GetValue<string>("Smtp:Username") ?? string.Empty;
+		_password = configuration.GetValue<string>("Smtp:Password") ?? string.Empty;
+		_fromEmail = configuration.GetValue<string>("Smtp:EmailFromAddress") ?? string.Empty;
+		_environment = Enum.TryParse(configuration.GetValue<string>("Smtp:Environment") ?? string.Empty, true, out Environment environment)
+			? environment
+			: Environment.LocalDev;
 	}
 
 	public void SendEmail(string subject, string body, List<string> recipients, List<string> recipientsCc)
@@ -84,30 +89,45 @@ public class Email : IEmail
 
 	private void Send()
 	{
-		using (SmtpClient client = new(_smtpServer, _port))
+		try
 		{
-			client.Credentials = new NetworkCredential(_username, _password);
-			client.EnableSsl = false;
-
-			MailMessage message = new()
+			if (_smtpServer == string.Empty || _username == string.Empty ||
+				_password == string.Empty || _fromEmail == string.Empty)
 			{
-				From = new MailAddress(_fromEmail),
-				Body = _body,
-				IsBodyHtml = true,
-				Subject = _environment switch
+				throw new Exception("Missing one or more parameters (Smtp Server, User Name, Password or From Email Address).");
+			}
+
+			using (SmtpClient client = new(_smtpServer, _port))
+			{
+				client.Credentials = new NetworkCredential(_username, _password);
+				client.EnableSsl = false;
+
+				MailMessage message = new()
 				{
-					Environment.LocalDev
-						or Environment.Development
-						or Environment.Test => _subject + " on " + _environment,
-					_ => _subject
-				}
-			};
+					From = new MailAddress(_fromEmail),
+					Body = _body,
+					IsBodyHtml = true,
+					Subject = _environment switch
+					{
+						Environment.LocalDev
+							or Environment.Development
+							or Environment.Test => _subject + " on " + _environment,
+						_ => _subject
+					}
+				};
 
-			_attachments.ForEach(a => message.Attachments.Add(a));
-			_recipients.ForEach(r => message.To.Add(r));
-			_recipientsCc.ForEach(r => message.CC.Add(r));
+				_attachments.ForEach(a => message.Attachments.Add(a));
+				_recipients.ForEach(r => message.To.Add(r));
+				_recipientsCc.ForEach(r => message.CC.Add(r));
 
-			client.Send(message);
+				client.Send(message);
+			}
 		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e);
+			throw;
+		}
+
 	}
 }
