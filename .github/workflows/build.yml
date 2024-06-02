@@ -2,10 +2,8 @@ name: Gated Build Check
 
 on:
   pull_request:
-    branches:
-    - main
-    - development
-
+    branches: ['main', 'development']
+    
 jobs:
   build:
     name: Build Check
