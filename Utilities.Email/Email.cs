@@ -15,6 +15,7 @@ public class Email : IEmail
 	}
 
 	//This is a test.
+	//This is comment.
 
 	private readonly string _smtpServer;
 	private readonly int _port;
