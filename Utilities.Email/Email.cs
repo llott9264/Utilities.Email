@@ -14,9 +14,6 @@ public class Email : IEmail
 		Production
 	}
 
-	//This is a test.
-	//This is comment.
-
 	private readonly string _smtpServer;
 	private readonly int _port;
 	private readonly string _username;
@@ -35,7 +32,7 @@ public class Email : IEmail
 		_smtpServer = configuration.GetValue<string>("Smtp:SmtpServer") ?? string.Empty;
 		_port = configuration.GetValue<int>("Smtp:Port") != 0
 			? configuration.GetValue<int>("Smtp:Port")
-			: 22;
+			: 25;
 		_username = configuration.GetValue<string>("Smtp:Username") ?? string.Empty;
 		_password = configuration.GetValue<string>("Smtp:Password") ?? string.Empty;
 		_fromEmail = configuration.GetValue<string>("Smtp:EmailFromAddress") ?? string.Empty;
