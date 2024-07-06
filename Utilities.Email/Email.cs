@@ -6,7 +6,7 @@ namespace Utilities.Email;
 
 public class Email : IEmail
 {
-	private enum Environment
+	public enum Environment
 	{
 		LocalDev,
 		Development,
@@ -26,7 +26,7 @@ public class Email : IEmail
 	private List<string> _recipients = new();
 	private List<string> _recipientsCc = new();
 	private List<Attachment> _attachments = new();
-
+	
 	public Email(IConfiguration configuration)
 	{
 		_smtpServer = configuration.GetValue<string>("Smtp:SmtpServer") ?? string.Empty;
@@ -40,6 +40,15 @@ public class Email : IEmail
 			? environment
 			: Environment.LocalDev;
 	}
+
+	//Smtp Settings
+	public string SmtpServer => _smtpServer;
+	public int Port => _port;
+	public string Username => _username;
+	public string Password => _password;
+	public string FromEmail => _fromEmail;
+	public Environment ServerEnvironment => _environment;
+	
 
 	public void SendEmail(string subject, string body, List<string> recipients, List<string> recipientsCc)
 	{
@@ -83,51 +92,46 @@ public class Email : IEmail
 				_recipientsCc.Add(recipient);
 			}
 		}
-
+		
 		Send();
 	}
 
 	private void Send()
 	{
-		try
+		if (_smtpServer == string.Empty || _username == string.Empty ||
+		    _password == string.Empty || _fromEmail == string.Empty)
 		{
-			if (_smtpServer == string.Empty || _username == string.Empty ||
-				_password == string.Empty || _fromEmail == string.Empty)
-			{
-				throw new Exception("Missing one or more parameters (Smtp Server, User Name, Password or From Email Address).");
-			}
-
-			using (SmtpClient client = new(_smtpServer, _port))
-			{
-				client.Credentials = new NetworkCredential(_username, _password);
-				client.EnableSsl = false;
-
-				MailMessage message = new()
-				{
-					From = new MailAddress(_fromEmail),
-					Body = _body,
-					IsBodyHtml = true,
-					Subject = _environment switch
-					{
-						Environment.LocalDev
-							or Environment.Development
-							or Environment.Test => _subject + " on " + _environment,
-						_ => _subject
-					}
-				};
-
-				_attachments.ForEach(a => message.Attachments.Add(a));
-				_recipients.ForEach(r => message.To.Add(r));
-				_recipientsCc.ForEach(r => message.CC.Add(r));
-
-				client.Send(message);
-			}
-		}
-		catch (Exception e)
-		{
-			Console.WriteLine(e);
-			throw;
+			throw new Exception("Missing one or more parameters (Smtp Server, User Name, Password or From Email Address).");
 		}
 
+		using (SmtpClient client = new(_smtpServer, _port))
+		{
+			client.Credentials = new NetworkCredential(_username, _password);
+			client.EnableSsl = false;
+			client.Send(BuildMessage());
+		}
+	}
+
+	private MailMessage BuildMessage()
+	{
+		MailMessage message = new()
+		{
+			From = new MailAddress(_fromEmail),
+			Body = _body,
+			IsBodyHtml = true,
+			Subject = _environment switch
+			{
+				Environment.LocalDev
+					or Environment.Development
+					or Environment.Test => _subject + " on " + _environment,
+				_ => _subject
+			}
+		};
+
+		_attachments.ForEach(a => message.Attachments.Add(a));
+		_recipients.ForEach(r => message.To.Add(r));
+		_recipientsCc.ForEach(r => message.CC.Add(r));
+
+		return message;
 	}
 }
