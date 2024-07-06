@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 [assembly: InternalsVisibleTo("Utilities.Email.Tests")]
 namespace Utilities.Email;
 
-public class Email : IEmail
+public class Email(IConfiguration configuration) : IEmail
 {
 	public enum Environment
 	{
@@ -16,34 +16,16 @@ public class Email : IEmail
 		Production
 	}
 
-	private readonly string _smtpServer;
-	private readonly int _port;
-	private readonly string _username;
-	private readonly string _password;
-	private readonly string _fromEmail;
-	private readonly Environment _environment;
-
-	public Email(IConfiguration configuration)
-	{
-		_smtpServer = configuration.GetValue<string>("Smtp:SmtpServer") ?? string.Empty;
-		_port = configuration.GetValue<int>("Smtp:Port") != 0
-			? configuration.GetValue<int>("Smtp:Port")
-			: 25;
-		_username = configuration.GetValue<string>("Smtp:Username") ?? string.Empty;
-		_password = configuration.GetValue<string>("Smtp:Password") ?? string.Empty;
-		_fromEmail = configuration.GetValue<string>("Smtp:EmailFromAddress") ?? string.Empty;
-		_environment = Enum.TryParse(configuration.GetValue<string>("Smtp:Environment") ?? string.Empty, true, out Environment environment)
-			? environment
-			: Environment.LocalDev;
-	}
-
-	//Smtp Settings
-	public string SmtpServer => _smtpServer;
-	public int Port => _port;
-	public string Username => _username;
-	public string Password => _password;
-	public string FromEmail => _fromEmail;
-	public Environment ServerEnvironment => _environment;
+	public string SmtpServer => configuration.GetValue<string>("Smtp:SmtpServer") ?? string.Empty;
+	public int Port => configuration.GetValue<int>("Smtp:Port") != 0
+		? configuration.GetValue<int>("Smtp:Port")
+		: 25;
+	public string Username => configuration.GetValue<string>("Smtp:Username") ?? string.Empty;
+	public string Password => configuration.GetValue<string>("Smtp:Password") ?? string.Empty;
+	public string FromEmail => configuration.GetValue<string>("Smtp:EmailFromAddress") ?? string.Empty;
+	public Environment ServerEnvironment => Enum.TryParse(configuration.GetValue<string>("Smtp:Environment") ?? string.Empty, true, out Environment environment)
+		? environment
+		: Environment.LocalDev;
 
 
 	public void SendEmail(string subject, string body, string recipients, string recipientsCc, string delimiter)
@@ -72,15 +54,15 @@ public class Email : IEmail
 
 	private void Send(MailMessage message)
 	{
-		if (_smtpServer == string.Empty || _username == string.Empty ||
-		    _password == string.Empty || _fromEmail == string.Empty)
+		if (SmtpServer == string.Empty || Username == string.Empty ||
+		    Password == string.Empty || FromEmail == string.Empty)
 		{
 			throw new Exception("Missing one or more parameters (Smtp Server, User Name, Password or From Email Address).");
 		}
 
-		using (SmtpClient client = new(_smtpServer, _port))
+		using (SmtpClient client = new(SmtpServer, Port))
 		{
-			client.Credentials = new NetworkCredential(_username, _password);
+			client.Credentials = new NetworkCredential(Username, Password);
 			client.EnableSsl = false;
 			client.Send(message);
 		}
@@ -90,14 +72,14 @@ public class Email : IEmail
 	{
 		MailMessage message = new()
 		{
-			From = new MailAddress(_fromEmail),
+			From = new MailAddress(FromEmail),
 			Body = body,
 			IsBodyHtml = true,
-			Subject = _environment switch
+			Subject = ServerEnvironment switch
 			{
 				Environment.LocalDev
 					or Environment.Development
-					or Environment.Test => subject + " on " + _environment,
+					or Environment.Test => subject + " on " + ServerEnvironment,
 				_ => subject
 			}
 		};
