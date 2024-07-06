@@ -12,8 +12,6 @@ jobs:
     if: github.event.pull_request.merged == true
     name: Publish Nuget Package
     runs-on: windows-latest    
-    env:
-      PATCH_NUMBER: ${{vars.PACKAGEVERSIONPATCHNUMBER}}
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
@@ -23,15 +21,13 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --configuration Release --no-restore /p:Version=1.1.$PATCH_NUMBER
+      run: dotnet build --configuration Release --no-restore /p:Version=1.1.${{vars.PACKAGEVERSIONPATCHNUMBER}}
     - name: Publish NuGet Package
       run: dotnet pack /p:Version=1.1.$PATCH_NUMBER
     - name: Prep packages
       run: dotnet nuget add source --username llott9264 --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/llott9264/index.json"
     - name: Publish NuGet Package to GitHub
       run: dotnet nuget push Utilities.Email/bin/Release/Utilities.Email*.nupkg --api-key ${{ secrets.NUGETPUBLISHTOKEN }}  --source "github"
-    - name: Increment Patch Number
-      run: ${{vars.PACKAGEVERSIONPATCHNUMBER}} = $PATCH_NUMBER + 1
   pull-request-not-merged:
     if: github.event.pull_request.merged == false
     name: Cancel Nuget Package Release
