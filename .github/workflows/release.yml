@@ -21,9 +21,8 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release --no-restore /p:Version=1.1.${{vars.PACKAGEVERSIONPATCHNUMBER}}
     - name: Publish NuGet Package
-      #run: dotnet pack Utilities.Email/Utilities.Email/Utilities.Email.csproj
       run: dotnet pack
     - name: Prep packages
       run: dotnet nuget add source --username llott9264 --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/llott9264/index.json"
