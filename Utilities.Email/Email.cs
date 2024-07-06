@@ -1,7 +1,9 @@
 ﻿using System.Net;
 using System.Net.Mail;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 
+[assembly: InternalsVisibleTo("Utilities.Email.Tests")]
 namespace Utilities.Email;
 
 public class Email : IEmail
@@ -21,12 +23,6 @@ public class Email : IEmail
 	private readonly string _fromEmail;
 	private readonly Environment _environment;
 
-	private string _subject = string.Empty;
-	private string _body = string.Empty;
-	private List<string> _recipients = new();
-	private List<string> _recipientsCc = new();
-	private List<Attachment> _attachments = new();
-	
 	public Email(IConfiguration configuration)
 	{
 		_smtpServer = configuration.GetValue<string>("Smtp:SmtpServer") ?? string.Empty;
@@ -48,23 +44,7 @@ public class Email : IEmail
 	public string Password => _password;
 	public string FromEmail => _fromEmail;
 	public Environment ServerEnvironment => _environment;
-	
 
-	public void SendEmail(string subject, string body, List<string> recipients, List<string> recipientsCc)
-	{
-		SendEmail(subject, body, recipients, recipientsCc, new List<Attachment>());
-	}
-
-	public void SendEmail(string subject, string body, List<string> recipients, List<string> recipientsCc, List<Attachment> attachments)
-	{
-		_subject = subject;
-		_body = body;
-		_recipients = recipients;
-		_recipientsCc = recipientsCc;
-		_attachments = attachments;
-
-		Send();
-	}
 
 	public void SendEmail(string subject, string body, string recipients, string recipientsCc, string delimiter)
 	{
@@ -73,30 +53,24 @@ public class Email : IEmail
 
 	public void SendEmail(string subject, string body, string recipients, string recipientsCc, string delimiter, List<Attachment> attachments)
 	{
-		_subject = subject;
-		_body = body;
-		_attachments = attachments;
-
-		foreach (string recipient in recipients.Split(delimiter))
-		{
-			if (recipient.Length > 0)
-			{
-				_recipients.Add(recipient);
-			}
-		}
-
-		foreach (string recipient in recipientsCc.Split(delimiter))
-		{
-			if (recipient.Length > 0)
-			{
-				_recipientsCc.Add(recipient);
-			}
-		}
-		
-		Send();
+		SendEmail(subject, body,
+			recipients.Split(delimiter).Where(recipient => recipient.Length > 0).ToList(),
+			recipientsCc.Split(delimiter).Where(recipient => recipient.Length > 0).ToList(),
+			attachments);
 	}
 
-	private void Send()
+	public void SendEmail(string subject, string body, List<string> recipients, List<string> recipientsCc)
+	{
+		SendEmail(subject, body, recipients, recipientsCc, new List<Attachment>());
+	}
+
+	public void SendEmail(string subject, string body, List<string> recipients, List<string> recipientsCc, List<Attachment> attachments)
+	{
+		MailMessage message = BuildMessage(subject, body, recipients, recipientsCc, attachments);
+		Send(message);
+	}
+
+	private void Send(MailMessage message)
 	{
 		if (_smtpServer == string.Empty || _username == string.Empty ||
 		    _password == string.Empty || _fromEmail == string.Empty)
@@ -108,29 +82,29 @@ public class Email : IEmail
 		{
 			client.Credentials = new NetworkCredential(_username, _password);
 			client.EnableSsl = false;
-			client.Send(BuildMessage());
+			client.Send(message);
 		}
 	}
 
-	private MailMessage BuildMessage()
+	internal MailMessage BuildMessage(string subject, string body, List<string> recipients, List<string> recipientsCc, List<Attachment> attachments)
 	{
 		MailMessage message = new()
 		{
 			From = new MailAddress(_fromEmail),
-			Body = _body,
+			Body = body,
 			IsBodyHtml = true,
 			Subject = _environment switch
 			{
 				Environment.LocalDev
 					or Environment.Development
-					or Environment.Test => _subject + " on " + _environment,
-				_ => _subject
+					or Environment.Test => subject + " on " + _environment,
+				_ => subject
 			}
 		};
 
-		_attachments.ForEach(a => message.Attachments.Add(a));
-		_recipients.ForEach(r => message.To.Add(r));
-		_recipientsCc.ForEach(r => message.CC.Add(r));
+		attachments.ForEach(a => message.Attachments.Add(a));
+		recipients.ForEach(r => message.To.Add(r));
+		recipientsCc.ForEach(r => message.CC.Add(r));
 
 		return message;
 	}

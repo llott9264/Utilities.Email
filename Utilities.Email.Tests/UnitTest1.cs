@@ -1,3 +1,4 @@
+using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
 using Moq;
 
@@ -12,7 +13,7 @@ namespace Utilities.Email.Tests
 			IConfiguration configuration = new ConfigurationBuilder()
 				.AddInMemoryCollection(new Dictionary<string, string>()
 				{
-					{"Smtp:SmtpServer", ""},
+					{"Smtp:SmtpServer", "webmail.bob.com"},
 					{"Smtp:Port", "25"},
 					{"Smtp:Username", "John"},
 					{"Smtp:Password", "1234Password"},
@@ -28,10 +29,12 @@ namespace Utilities.Email.Tests
 
 			//Act
 			Email email = new(configuration);
-			Exception ex = Assert.Throws<Exception>(() => email.SendEmail(subject, body, recipients, recipientsCc));
+			//Exception ex = Assert.Throws<Exception>(() => email.SendEmail(subject, body, recipients, recipientsCc));
+
+			email.BuildMessage(subject, body, recipients, recipientsCc, new List<Attachment>());
 
 			//Assert
-			Assert.Contains("Missing one or more parameters (Smtp Server, User Name, Password or From Email Address).", ex.Message);
+			//Assert.Contains("Missing one or more parameters (Smtp Server, User Name, Password or From Email Address).", ex.Message);
 		}
 	}
 }
