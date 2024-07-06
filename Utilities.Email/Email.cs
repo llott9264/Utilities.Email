@@ -35,10 +35,7 @@ public class Email(IConfiguration configuration) : IEmail
 
 	public void SendEmail(string subject, string body, string recipients, string recipientsCc, string delimiter, List<Attachment> attachments)
 	{
-		SendEmail(subject, body,
-			recipients.Split(delimiter).Where(recipient => recipient.Length > 0).ToList(),
-			recipientsCc.Split(delimiter).Where(recipient => recipient.Length > 0).ToList(),
-			attachments);
+		SendEmail(subject, body, GetAddresses(recipients, delimiter), GetAddresses(recipientsCc, delimiter), attachments);
 	}
 
 	public void SendEmail(string subject, string body, List<string> recipients, List<string> recipientsCc)
@@ -48,17 +45,18 @@ public class Email(IConfiguration configuration) : IEmail
 
 	public void SendEmail(string subject, string body, List<string> recipients, List<string> recipientsCc, List<Attachment> attachments)
 	{
-		MailMessage message = BuildMessage(subject, body, recipients, recipientsCc, attachments);
-		Send(message);
+		Send(subject, body, recipients, recipientsCc, attachments);
 	}
 
-	private void Send(MailMessage message)
+	private void Send(string subject, string body, List<string> recipients, List<string> recipientsCc, List<Attachment> attachments)
 	{
 		if (SmtpServer == string.Empty || Username == string.Empty ||
 		    Password == string.Empty || FromEmail == string.Empty)
 		{
 			throw new Exception("Missing one or more parameters (Smtp Server, User Name, Password or From Email Address).");
 		}
+
+		MailMessage message = BuildMessage(subject, body, recipients, recipientsCc, attachments);
 
 		using (SmtpClient client = new(SmtpServer, Port))
 		{
@@ -89,5 +87,10 @@ public class Email(IConfiguration configuration) : IEmail
 		recipientsCc.ForEach(r => message.CC.Add(r));
 
 		return message;
+	}
+
+	internal List<string> GetAddresses(string recipients, string delimiter)
+	{
+		return recipients.Split(delimiter).Where(recipient => recipient.Trim().Length > 0).ToList();
 	}
 }
