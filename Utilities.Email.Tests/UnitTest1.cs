@@ -6,55 +6,55 @@ namespace Utilities.Email.Tests
 {
 	public class UnitTest1
 	{
-		private Attachment BuildAttachment()
-		{
-			using (MemoryStream stream = new())
+		private readonly IConfiguration _baseConfiguration = new ConfigurationBuilder()
+			.AddInMemoryCollection(new Dictionary<string, string>()
 			{
-				using (StreamWriter writer = new(stream))
+				{"Smtp:SmtpServer", "webmail.bob.com"},
+				{"Smtp:Port", "20"},
+				{"Smtp:Username", "John"},
+				{"Smtp:Password", "1234Password"},
+				{"Smtp:EmailFromAddress", "noreply@bob.com"},
+				{"Smtp:Environment", "Production"}
+			})
+			.Build();
+
+		private const string Subject = "Email Test";
+		private const string Body = "This is a test.";
+		private readonly List<string> _recipients = ["john@bob.com"];
+		private readonly List<string> _recipientsCc = ["bob@bob.com"];
+		private Attachment Attachment
+		{
+			get
+			{
+				using (MemoryStream stream = new())
 				{
-					writer.Write("Hello its my sample file");
-					writer.Flush();
-					stream.Position = 0;
+					using (StreamWriter writer = new(stream))
+					{
+						writer.Write("Hello its my sample file");
+						writer.Flush();
+						stream.Position = 0;
 
-					ContentType ct = new(MediaTypeNames.Text.Plain);
-					Attachment attachment = new(stream, ct);
-					attachment.ContentDisposition.FileName = "myFile.txt";
+						ContentType ct = new(MediaTypeNames.Text.Plain);
+						Attachment attachment = new(stream, ct);
+						attachment.ContentDisposition.FileName = "myFile.txt";
 
-					return attachment;
+						return attachment;
+					}
 				}
 			}
 		}
-
-		private const string _subject = "Email Test";
-		private const string _body = "This is a test.";
-		private readonly List<string> _recipients = ["john@bob.com"];
-		private readonly List<string> _recipientsCc = ["bob@bob.com"];
 
 		#region Configuration Tests
 		[Fact]
 		public void SendEmail_ReturnsSystemExceptionSmtpServerIsMissing_True()
 		{
 			//Arrange
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", ""},
-					{"Smtp:Port", "25"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "Test"}
-				})
-				.Build();
-
-			string subject = "Email Test";
-			string body = "This is a test.";
-			List<string> recipients = ["john@bob.com"];
-			List<string> recipientsCc = ["bob@bob.com"];
-
+			IConfiguration configuration = _baseConfiguration;
+			configuration["Smtp:SmtpServer"] = "";
+			
 			//Act
 			Email email = new(configuration);
-			Exception ex = Assert.Throws<Exception>(() => email.SendEmail(subject, body, recipients, recipientsCc));
+			Exception ex = Assert.Throws<Exception>(() => email.SendEmail(Subject, Body, _recipients, _recipientsCc));
 
 			//Assert
 			Assert.Contains("Missing one or more parameters (Smtp Server, User Name, Password or From Email Address).", ex.Message);
@@ -65,26 +65,12 @@ namespace Utilities.Email.Tests
 		public void SendEmail_ReturnsSystemExceptionUsernameIsMissing_True()
 		{
 			//Arrange
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "25"},
-					{"Smtp:Username", ""},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "Test"}
-				})
-				.Build();
-
-			string subject = "Email Test";
-			string body = "This is a test.";
-			List<string> recipients = ["john@bob.com"];
-			List<string> recipientsCc = ["bob@bob.com"];
+			IConfiguration configuration = _baseConfiguration;
+			configuration["Smtp:Username"] = "";
 
 			//Act
 			Email email = new(configuration);
-			Exception ex = Assert.Throws<Exception>(() => email.SendEmail(subject, body, recipients, recipientsCc));
+			Exception ex = Assert.Throws<Exception>(() => email.SendEmail(Subject, Body, _recipients, _recipientsCc));
 
 			//Assert
 			Assert.Contains("Missing one or more parameters (Smtp Server, User Name, Password or From Email Address).", ex.Message);
@@ -94,26 +80,12 @@ namespace Utilities.Email.Tests
 		public void SendEmail_ReturnsSystemExceptionPasswordIsMissing_True()
 		{
 			//Arrange
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "25"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", ""},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "Test"}
-				})
-				.Build();
-
-			string subject = "Email Test";
-			string body = "This is a test.";
-			List<string> recipients = ["john@bob.com"];
-			List<string> recipientsCc = ["bob@bob.com"];
+			IConfiguration configuration = _baseConfiguration;
+			configuration["Smtp:Password"] = "";
 
 			//Act
 			Email email = new(configuration);
-			Exception ex = Assert.Throws<Exception>(() => email.SendEmail(subject, body, recipients, recipientsCc));
+			Exception ex = Assert.Throws<Exception>(() => email.SendEmail(Subject, Body, _recipients, _recipientsCc));
 
 			//Assert
 			Assert.Contains("Missing one or more parameters (Smtp Server, User Name, Password or From Email Address).", ex.Message);
@@ -123,26 +95,12 @@ namespace Utilities.Email.Tests
 		public void SendEmail_ReturnsSystemExceptionFromAddressIsMissing_True()
 		{
 			//Arrange
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "25"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", ""},
-					{"Smtp:Environment", "Test"}
-				})
-				.Build();
-
-			string subject = "Email Test";
-			string body = "This is a test.";
-			List<string> recipients = ["john@bob.com"];
-			List<string> recipientsCc = ["bob@bob.com"];
+			IConfiguration configuration = _baseConfiguration;
+			configuration["Smtp:EmailFromAddress"] = "";
 
 			//Act
 			Email email = new(configuration);
-			Exception ex = Assert.Throws<Exception>(() => email.SendEmail(subject, body, recipients, recipientsCc));
+			Exception ex = Assert.Throws<Exception>(() => email.SendEmail(Subject, Body, _recipients, _recipientsCc));
 
 			//Assert
 			Assert.Contains("Missing one or more parameters (Smtp Server, User Name, Password or From Email Address).", ex.Message);
@@ -154,19 +112,7 @@ namespace Utilities.Email.Tests
 		public void BuildMessage_ReturnsEmailClass_True()
 		{
 			//Act
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "20"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "Production"}
-				})
-				.Build();
-
-			Email email = new(configuration);
+			Email email = new(_baseConfiguration);
 
 			//Assert
 			Assert.True(email.SmtpServer == "webmail.bob.com");
@@ -182,26 +128,18 @@ namespace Utilities.Email.Tests
 		[Fact]
 		public void BuildMessage_ReturnsValidMailMessage_True()
 		{
-			//Act
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "25"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "LocalDev"}
-				})
-				.Build();
+			//Arrange
+			IConfiguration configuration = _baseConfiguration;
+			configuration["Smtp:Environment"] = "LocalDev";
+			List<Attachment> attachments = [Attachment];
 
+			//Act
 			Email email = new(configuration);
-			List<Attachment> attachments = [BuildAttachment()];
-			MailMessage message = email.BuildMessage(_subject, _body, _recipients, _recipientsCc, attachments);
+			MailMessage message = email.BuildMessage(Subject, Body, _recipients, _recipientsCc, attachments);
 
 			//Assert
 			Assert.True(message.Subject == "Email Test on LocalDev");
-			Assert.True(message.Body == _body);
+			Assert.True(message.Body == Body);
 			Assert.True(message.To.Any(a => a.Address == "john@bob.com"));
 			Assert.True(message.CC.Any(a => a.Address == "bob@bob.com"));
 			Assert.True(message.Attachments.Count == 1);
@@ -211,21 +149,13 @@ namespace Utilities.Email.Tests
 		[Fact]
 		public void BuildMessage_ReturnsSubjectOnDevelopment_True()
 		{
-			//Act
-				IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "25"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "Development"}
-				})
-				.Build();
+			//Arrange
+			IConfiguration configuration = _baseConfiguration;
+			configuration["Smtp:Environment"] = "Development";
 
+			//Act
 			Email email = new(configuration);
-			MailMessage message = email.BuildMessage(_subject, _body, _recipients, _recipientsCc, new List<Attachment>());
+			MailMessage message = email.BuildMessage(Subject, Body, _recipients, _recipientsCc, new List<Attachment>());
 
 			//Assert
 			Assert.True(message.Subject == "Email Test on Development");
@@ -234,21 +164,13 @@ namespace Utilities.Email.Tests
 		[Fact]
 		public void BuildMessage_ReturnsSubjectOnTest_True()
 		{
-			//Act
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "25"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "Test"}
-				})
-				.Build();
+			//Arrange
+			IConfiguration configuration = _baseConfiguration;
+			configuration["Smtp:Environment"] = "Test";
 
+			//Act
 			Email email = new(configuration);
-			MailMessage message = email.BuildMessage(_subject, _body, _recipients, _recipientsCc, new List<Attachment>());
+			MailMessage message = email.BuildMessage(Subject, Body, _recipients, _recipientsCc, new List<Attachment>());
 
 			//Assert
 			Assert.True(message.Subject == "Email Test on Test");
@@ -258,44 +180,28 @@ namespace Utilities.Email.Tests
 		[Fact]
 		public void BuildMessage_ReturnsSubjectOnProduction_True()
 		{
-			//Act
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "25"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "Production"}
-				})
-				.Build();
+			//Arrange
+			IConfiguration configuration = _baseConfiguration;
+			configuration["Smtp:Environment"] = "Production";
 
+			//Act
 			Email email = new(configuration);
-			MailMessage message = email.BuildMessage(_subject, _body, _recipients, _recipientsCc, new List<Attachment>());
+			MailMessage message = email.BuildMessage(Subject, Body, _recipients, _recipientsCc, new List<Attachment>());
 
 			//Assert
-			Assert.True(message.Subject == _subject);
+			Assert.True(message.Subject == Subject);
 		}
 
 		[Fact]
 		public void BuildMessage_ReturnsSubjectOnLocalDevIfEnumNotFound_True()
 		{
-			//Act
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "25"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "Staging"}
-				})
-				.Build();
+			//Arrange
+			IConfiguration configuration = _baseConfiguration;
+			configuration["Smtp:Environment"] = "Staging";
 
+			//Act
 			Email email = new(configuration);
-			MailMessage message = email.BuildMessage(_subject, _body, _recipients, _recipientsCc, new List<Attachment>());
+			MailMessage message = email.BuildMessage(Subject, Body, _recipients, _recipientsCc, new List<Attachment>());
 
 			//Assert
 			Assert.True(message.Subject == "Email Test on LocalDev");
@@ -307,19 +213,7 @@ namespace Utilities.Email.Tests
 		public void BuildMessage_ReturnsValidListOfAddress_True()
 		{
 			//Act
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "20"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "Production"}
-				})
-				.Build();
-
-			Email email = new(configuration);
+			Email email = new(_baseConfiguration);
 
 			//Assert
 			List<string> recipients = email.GetAddresses("bob@bob.com;john@bob.com;", ";");
@@ -330,22 +224,10 @@ namespace Utilities.Email.Tests
 		}
 
 		[Fact]
-		public void BuildMessage_ReturnsValidAddressesWithoutEmptyAddress_True()
+		public void BuildMessage_ReturnsValidAddressesWithoutReturningEmptyAddress_True()
 		{
 			//Act
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "20"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "Production"}
-				})
-				.Build();
-
-			Email email = new(configuration);
+			Email email = new(_baseConfiguration);
 
 			//Assert
 			//Added whitespace to the end of the string to verify a non-valid recipient is not returned.
@@ -360,19 +242,7 @@ namespace Utilities.Email.Tests
 		public void BuildMessage_ReturnsValidAddressesWithMissingFinalDelimiter_True()
 		{
 			//Act
-			IConfiguration configuration = new ConfigurationBuilder()
-				.AddInMemoryCollection(new Dictionary<string, string>()
-				{
-					{"Smtp:SmtpServer", "webmail.bob.com"},
-					{"Smtp:Port", "20"},
-					{"Smtp:Username", "John"},
-					{"Smtp:Password", "1234Password"},
-					{"Smtp:EmailFromAddress", "noreply@bob.com"},
-					{"Smtp:Environment", "Production"}
-				})
-				.Build();
-
-			Email email = new(configuration);
+			Email email = new(_baseConfiguration);
 
 			//Assert
 			//Added whitespace to the end of the string to verify a non-valid recipient is not returned.
