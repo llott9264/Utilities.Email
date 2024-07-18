@@ -24,13 +24,13 @@ jobs:
       with:
         dotnet-version: '8.x'
     - name: CLean 
-      run: dotnet clean Utilities.Email/Utilities.Email.csproj -c $BUILD_CONFIG && dotnet nuget locals all --clear
+      run: dotnet clean -c ${{ env.BUILD_CONFIG }} && dotnet nuget locals all --clear
       
     - name: Install dependencies
       run: dotnet restore
       
     - name: Build
-      run: dotnet build --configuration $BUILD_CONFIG --no-restore
+      run: dotnet build --configuration ${{ env.BUILD_CONFIG }} --no-restore
 
     - name: Publish NuGet Package
       run: dotnet pack /p:Version=${{ env.PACKAGE_VERSION }}
