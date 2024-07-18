@@ -43,10 +43,10 @@ jobs:
       run: dotnet pack /p:Version=$VERSION
       
     - name: Prep packages
-      run: dotnet nuget add source --username llott9264 --password ${{ GITHUB_NUGET_API_KEY }} --store-password-in-clear-text --name github ${{ env.GITHUB_NUGET_URL }}
+      run: dotnet nuget add source --username llott9264 --password ${{ env.GITHUB_NUGET_API_KEY }} --store-password-in-clear-text --name github ${{ env.GITHUB_NUGET_URL }}
       
     - name: Publish NuGet Package to GitHub
-      run: dotnet nuget push Utilities.Email/bin/Release/Utilities.Email*.nupkg --api-key ${{ GITHUB_NUGET_API_KEY }}  --source "github"
+      run: dotnet nuget push Utilities.Email/bin/Release/Utilities.Email*.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }}  --source "github"
   pull-request-not-merged:
     if: github.event.pull_request.merged == false
     name: Cancel Nuget Package Release
