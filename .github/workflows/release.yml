@@ -1,44 +1,37 @@
 name: Release
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-    types:
-      - closed
 
 permissions: write-all
 
 jobs:
   publish-nuget:
-    if: github.event.pull_request.merged == true
     name: Publish Nuget Package
-    runs-on: ubuntu-latest
-    
+    runs-on: ubuntu-latest    
     env:
       BUILD_CONFIG: Release
       PACKAGE_VERSION: 1.2.${{ github.run_number }}
       GITHUB_NUGET_API_KEY: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_NUGET_URL: https://nuget.pkg.github.com/llott9264/index.json
-    
+      
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '8.x'
+    - name: CLean 
+      run: dotnet clean -c $BUILD_CONFIG && dotnet nuget locals all --clear
+      
     - name: Install dependencies
       run: dotnet restore
+      
     - name: Build
       run: dotnet build --configuration $BUILD_CONFIG --no-restore
 
-    # Store the version, stripping any v-prefix
-    - name: Write release version
-      run: |
-        VERSION=${{ env.PACKAGE_VERSION }}
-        echo Version: $VERSION
-        echo "VERSION=$VERSION" >> $GITHUB_ENV      
-        
     - name: Publish NuGet Package
       run: dotnet pack /p:Version=$VERSION
       
@@ -46,12 +39,4 @@ jobs:
       run: dotnet nuget add source --username llott9264 --password ${{ env.GITHUB_NUGET_API_KEY }} --store-password-in-clear-text --name github ${{ env.GITHUB_NUGET_URL }}
       
     - name: Publish NuGet Package to GitHub
-      run: dotnet nuget push Utilities.Email/bin/Release/Utilities.Email*.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }}  --source "github"
-  pull-request-not-merged:
-    if: github.event.pull_request.merged == false
-    name: Cancel Nuget Package Release
-    runs-on: ubuntu-latest
-    steps:
-    - run: |
-        echo Pull Request was not merged with main branch.  Release was canceled.
-  
+      run: dotnet nuget push Utilities.Email/bin/Release/Utilities.Email*.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }}  --source "github" --skip-duplicate
