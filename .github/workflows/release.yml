@@ -24,7 +24,7 @@ jobs:
       with:
         dotnet-version: '8.x'
     - name: CLean 
-      run: dotnet clean -c $BUILD_CONFIG && dotnet nuget locals all --clear
+      run: dotnet clean Utilities.Email/Utilities.Email.csproj -c $BUILD_CONFIG && dotnet nuget locals all --clear
       
     - name: Install dependencies
       run: dotnet restore
