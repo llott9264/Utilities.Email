@@ -39,4 +39,4 @@ jobs:
       run: dotnet nuget add source --username llott9264 --password ${{ env.GITHUB_NUGET_API_KEY }} --store-password-in-clear-text --name github ${{ env.GITHUB_NUGET_URL }}
       
     - name: Publish NuGet Package to GitHub
-      run: dotnet nuget push \Utilities.Email*.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }}  --source "github" --skip-duplicate
+      run: dotnet nuget push Utilities.Email.${{ env.PACKAGE_VERSION }}.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }}  --source "github" --skip-duplicate
