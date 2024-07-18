@@ -33,7 +33,7 @@ jobs:
       run: dotnet build --configuration $BUILD_CONFIG --no-restore
 
     - name: Publish NuGet Package
-      run: dotnet pack /p:Version=$VERSION
+      run: dotnet pack /p:Version=${{ env.PACKAGE_VERSION }}
       
     - name: Prep packages
       run: dotnet nuget add source --username llott9264 --password ${{ env.GITHUB_NUGET_API_KEY }} --store-password-in-clear-text --name github ${{ env.GITHUB_NUGET_URL }}
