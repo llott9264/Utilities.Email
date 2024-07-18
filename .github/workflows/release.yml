@@ -10,7 +10,7 @@ permissions: write-all
 jobs:
   publish-nuget:
     name: Publish Nuget Package
-    runs-on: ubuntu-latest    
+    runs-on: windows-latest    
     env:
       BUILD_CONFIG: Release
       PACKAGE_VERSION: 1.2.${{ github.run_number }}
