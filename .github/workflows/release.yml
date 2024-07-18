@@ -10,7 +10,7 @@ permissions: write-all
 jobs:
   publish-nuget:
     name: Publish Nuget Package
-    runs-on: ubuntu-latest    
+    runs-on: windows-latest    
     env:
       BUILD_CONFIG: Release
       PACKAGE_VERSION: 1.2.${{ github.run_number }}
@@ -39,4 +39,4 @@ jobs:
       run: dotnet nuget add source --username llott9264 --password ${{ env.GITHUB_NUGET_API_KEY }} --store-password-in-clear-text --name github ${{ env.GITHUB_NUGET_URL }}
       
     - name: Publish NuGet Package to GitHub
-      run: dotnet nuget push Utilities.Email/bin/Release/Utilities.Email*.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }}  --source "github" --skip-duplicate
+      run: dotnet nuget push Utilities.Email*.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }}  --source "github" --skip-duplicate
