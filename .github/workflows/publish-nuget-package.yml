@@ -1,9 +1,11 @@
 name: Release
 
 on:
-  push:
+  pull_request:
     branches:
       - main
+    types:
+      - closed
 
 permissions:
   packages: write
@@ -11,6 +13,7 @@ permissions:
 
 jobs:
   publish-nuget:  
+    if: github.event.pull_request.merged == true
     name: Publish Nuget Package
     runs-on: windows-latest
     env:
@@ -34,3 +37,10 @@ jobs:
 
     - name: Publish NuGet Package
       run: dotnet nuget push ./artifacts/Utilities.Email.${{ env.PACKAGE_VERSION }}.nupkg  --api-key ${{ env.GITHUB_NUGET_API_KEY }} --source ${{ env.GITHUB_NUGET_URL }} --skip-duplicate
+  pull-request-not-merged:
+    if: github.event.pull_request.merged == false
+    name: Cancel Nuget Package Release
+    runs-on: windows-latest
+    steps:
+    - run: |
+        echo Pull Request was not merged with development branch.  Release was canceled.
