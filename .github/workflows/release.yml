@@ -5,27 +5,12 @@ on:
     branches:
       - main
 
-permissions:
-  actions: write
-  attestations: write
-  checks: write
-  contents: write
-  deployments: write
-  id-token: write
-  issues: write
-  discussions: write
-  packages: write
-  pages: write
-  pull-requests: write
-  repository-projects: write
-  security-events: write
-  statuses: write
+permissions: write-all
 
 jobs:
   publish-nuget:  
     name: Publish Nuget Package
     runs-on: windows-latest
-    permissions: write-all
     env:
       BUILD_CONFIG: Release
       PACKAGE_VERSION: 1.2.${{ github.run_number }}
@@ -38,20 +23,21 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '8.x'
-    - name: CLean 
-      run: dotnet clean -c ${{ env.BUILD_CONFIG }} && dotnet nuget locals all --clear
+#    - name: CLean 
+#      run: dotnet clean -c ${{ env.BUILD_CONFIG }} && dotnet nuget locals all --clear
       
     - name: Install dependencies
       run: dotnet restore
       
-    - name: Build
-      run: dotnet build --configuration ${{ env.BUILD_CONFIG }} --no-restore
+#    - name: Build
+#      run: dotnet build --configuration ${{ env.BUILD_CONFIG }} --no-restore
 
     - name: Publish NuGet Package
-      run: dotnet pack /p:Version=${{ env.PACKAGE_VERSION }}
+      run: dotnet pack /p:Version=${{ env.PACKAGE_VERSION }} -o ./artifacts
       
     - name: Prep packages
       run: dotnet nuget add source --username llott9264 --password ${{ env.GITHUB_NUGET_API_KEY }} --store-password-in-clear-text --name github ${{ env.GITHUB_NUGET_URL }}
       
     - name: Publish NuGet Package to GitHub
-      run: dotnet nuget push D:\a\Utilities.Email\Utilities.Email\Utilities.Email\bin\Release\Utilities.Email.${{ env.PACKAGE_VERSION }}.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }}  --source "github" --skip-duplicate
+      #run: dotnet nuget push D:\a\Utilities.Email\Utilities.Email\Utilities.Email\bin\Release\Utilities.Email.${{ env.PACKAGE_VERSION }}.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }}  --source "github" --skip-duplicate
+      run: dotnet nuget push ./artifacts/Utilities.Email.${{ env.PACKAGE_VERSION }}.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }}  --source "github" --skip-duplicate
