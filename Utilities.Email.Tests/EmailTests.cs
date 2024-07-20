@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Utilities.Email.Tests
 {
-	public class UnitTest1
+	public class EmailTests
 	{
 		private readonly IConfiguration _baseConfiguration = new ConfigurationBuilder()
 			.AddInMemoryCollection(new Dictionary<string, string>()

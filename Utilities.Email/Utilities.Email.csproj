@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Version>$(VersionPrefix)</Version>
-    <Description>A powerful and fast library for composing and sending emails from any  .Net application.</Description>
+    <Description>A powerful and fast library for composing and sending emails from any .Net application.</Description>
     <Authors>Lee Lott</Authors>
     <Title>Utilities.Email</Title>
     <Copyright>2024</Copyright>
