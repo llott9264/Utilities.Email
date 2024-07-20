@@ -5,7 +5,10 @@ on:
     branches:
       - main
 
-permissions: write-all
+#permissions: write-all
+permissions:
+  packages: write
+  contents: read
 
 jobs:
   publish-nuget:  
@@ -35,9 +38,9 @@ jobs:
     - name: Build NuGet Package
       run: dotnet pack /p:Version=${{ env.PACKAGE_VERSION }} -o ./artifacts
       
-    - name: Prep Package
-      run: dotnet nuget add source --username llott9264 --password ${{ env.GITHUB_NUGET_API_KEY }} --store-password-in-clear-text --name github ${{ env.GITHUB_NUGET_URL }}
+#    - name: Prep Package
+#      run: dotnet nuget add source --username llott9264 --password ${{ env.GITHUB_NUGET_API_KEY }} --store-password-in-clear-text --name github ${{ env.GITHUB_NUGET_URL }}
       
     - name: Publish NuGet Package
       #run: dotnet nuget push D:\a\Utilities.Email\Utilities.Email\Utilities.Email\bin\Release\Utilities.Email.${{ env.PACKAGE_VERSION }}.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }}  --source "github" --skip-duplicate
-      run: dotnet nuget push ./artifacts/Utilities.Email.${{ env.PACKAGE_VERSION }}.nupkg  --source "github" --skip-duplicate
+      run: dotnet nuget push ./artifacts/Utilities.Email.${{ env.PACKAGE_VERSION }}.nupkg  --api-key ${{ env.GITHUB_NUGET_API_KEY }} --source ${{ env.GITHUB_NUGET_URL }} --skip-duplicate
