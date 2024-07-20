@@ -18,7 +18,7 @@ jobs:
     runs-on: windows-latest
     env:
       BUILD_CONFIG: Release
-      PACKAGE_VERSION: 1.2.${{ github.run_number }}
+      PACKAGE_VERSION: 1.3.${{ github.run_number }}
       GITHUB_NUGET_API_KEY: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_NUGET_URL: https://nuget.pkg.github.com/llott9264/index.json
       
