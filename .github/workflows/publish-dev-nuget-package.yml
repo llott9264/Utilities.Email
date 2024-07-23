@@ -7,9 +7,9 @@ on:
     types:
       - closed
 
-permissions:
-  packages: write
-  contents: read
+#permissions:
+#  packages: write
+#  contents: read
 
 jobs:
   publish-nuget:  
