@@ -23,18 +23,18 @@ jobs:
       GITHUB_NUGET_URL: https://nuget.pkg.github.com/llott9264/index.json
       
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.x'
 
-    - name: Install dependencies
-      run: dotnet restore
+#    - name: Install dependencies
+#      run: dotnet restore
 
     - name: Build NuGet Package
-      run: dotnet pack /p:Version=${{ env.PACKAGE_VERSION }} --configuration ${{ env.BUILD_CONFIG }} --output ./artifacts
+      run: dotnet pack ./src/Utilities.Email/Utilities.Email.csproj /p:Version=${{ env.PACKAGE_VERSION }} --configuration ${{ env.BUILD_CONFIG }} --output ./artifacts
 
     - name: Publish NuGet Package
       run: dotnet nuget push ./artifacts/Utilities.Email.${{ env.PACKAGE_VERSION }}.nupkg --api-key ${{ env.GITHUB_NUGET_API_KEY }} --source ${{ env.GITHUB_NUGET_URL }} --skip-duplicate

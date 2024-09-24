@@ -11,12 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup dotnet 
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.x
-      - name: Install dependencies
-        run: dotnet restore
+#      - name: Install dependencies
+#        run: dotnet restore
       - name: Build
-        run: dotnet build
+        run: dotnet build ./src/Utilities.Email/Utilities.Email.csproj
       - name: Run Unit Tests
-        run: dotnet test
+        run: dotnet test ./src/Utilities.Email.Tests/Utilities.Email.Tests.csproj
+
