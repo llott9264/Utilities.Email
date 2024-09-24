@@ -229,10 +229,10 @@ namespace Utilities.Email.Tests
 			//Act
 			Email email = new(_baseConfiguration);
 
-			//Assert
-			//Added whitespace to the end of the string to verify a non-valid recipient is not returned.
+			//Added whitespace to the end of the string to verify a non-valid recipient is not returned and the whitespace is trimmed.
 			List<string> recipients = email.GetAddresses("bob@bob.com;john@bob.com; ", ";");
 
+			//Assert
 			Assert.True(recipients.Count == 2);
 			Assert.Contains("bob@bob.com", recipients);
 			Assert.Contains("john@bob.com", recipients);
@@ -244,10 +244,10 @@ namespace Utilities.Email.Tests
 			//Act
 			Email email = new(_baseConfiguration);
 
-			//Assert
-			//Added whitespace to the end of the string to verify a non-valid recipient is not returned.
+			//Left off semicolon at the end of the string to verify two recipients are still returned.
 			List<string> recipients = email.GetAddresses("bob@bob.com;john@bob.com", ";");
 
+			//Assert
 			Assert.True(recipients.Count == 2);
 			Assert.Contains("bob@bob.com", recipients);
 			Assert.Contains("john@bob.com", recipients);
