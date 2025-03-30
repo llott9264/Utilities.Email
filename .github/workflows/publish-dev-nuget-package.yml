@@ -30,9 +30,6 @@ jobs:
       with:
         dotnet-version: '8.x'
         
-#    - name: Install dependencies
-#      run: dotnet restore
-      
     - name: Build NuGet Package
       run: dotnet pack ./src/Utilities.Email/Utilities.Email.csproj /p:Version=${{ env.PACKAGE_VERSION }} --configuration ${{ env.BUILD_CONFIG }} --output ./artifacts
       
