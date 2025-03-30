@@ -10,7 +10,11 @@ public class EmailServiceRegistrationTests
 	private readonly IConfiguration _configuration = new ConfigurationBuilder()
 		.AddInMemoryCollection(new Dictionary<string, string?>
 		{
-			{ "Gpg:KeyFolderPath", "Value1" }
+			{ "Smtp:SmtpServer", "Value1" },
+			{ "Smtp:Port", "Value2" },
+			{ "Smtp:Username", "Value3" },
+			{ "Smtp:Password", "Value4" },
+			{ "Smtp:Environment", "Value5" }
 		})
 		.Build();
 
@@ -107,7 +111,7 @@ public class EmailServiceRegistrationTests
 	}
 
 	[Fact]
-	public void AddEmailServices_CleanUpDirectoryHandler_VerifyMediatorHandlerExists()
+	public void AddEmailServices_SendEmailCommandHandler_VerifyMediatorHandlerExists()
 	{
 		// Arrange
 		ServiceCollection services = new();
